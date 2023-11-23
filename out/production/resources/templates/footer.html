@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en" class="no-js" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <!-- head 태그 내의 내용 ... -->
+    <!-- jQuery 라이브러리 포함 -->
+    <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+
+    <!--각 페이지에 들어갈 기본 속성  -->
+    <title>영화리뷰사이트</title>
+    <meta charset="UTF-8">
+    <meta name="description" content="">
+    <meta name="keywords" content="">
+    <meta name="author" content="">
+    <link rel="profile" href="#">
+
+    <!-- 글꼴 -->
+    <link rel="stylesheet" href='http://fonts.googleapis.com/css?family=Dosis:400,700,500|Nunito:300,400,600' />
+    <!-- 모바일 화면 전환처리용 -->
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="format-detection" content="telephone-no">
+
+    <!-- CSS파일 -->
+    <link rel="stylesheet" href="/includes/plugins.css">
+    <link rel="stylesheet" href="/includes/style.css">
+</head>
+
+<body>
+<footer class="ht-footer">
+    <div class="container">
+        <div class="flex-parent-ft">
+            <div class="flex-child-ft item2">
+                <h4>가입한 회원 MBTI 비율</h4>
+                <!-- MBTi 비율 들어갈 곳 -->
+                <ul>
+                    <li><a id="mbti-IJ">IJ : </a></li>
+                    <li><a id="mbti-EJ">EJ : </a></li>
+                    <li><a id="mbti-IP">IP : </a></li>
+                    <li><a id="mbti-EP">EP : </a></li>
+                    <li><a id="mbti-no">아직 유형을 몰라요 : </a></li>
+                </ul>
+            </div>
+
+            <div class="flex-child-ft item2">
+                <!-- 인기많은 리뷰들? 넣기 좋은 공간 -->
+                <h4>인기 리뷰글</h4>
+                <div th:each="review : ${popularReview}" th:begin="0" th:end="4">
+                    <div class="slide-it">
+                        <h6 th:text="${review.movie_title + '\n' + review.review_content}"></h6>
+                        <br>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex-child-ft item2">
+                <ul>
+                    <li><a>프로젝트 3팀 실습물 입니다.</a></li>
+                </ul>
+                <!-- 테스트 이미지 로고 -->
+                <img alt="logo" th:src="@{/includes/images/logo1.png}" width="100px" height="100px">
+            </div>
+
+            <!-- 위로 가기 -->
+            <div class="backtotop">
+                <p><a href="#" id="back-to-top"><i class="ion-ios-arrow-thin-up">위로</i></a></p>
+            </div>
+        </div>
+    </div>
+
+</footer>
+
+
+<script>
+        $(document).ready(function () {
+            $.ajax({
+                url: "/member/mbti-count",
+                method: "GET",
+                dataType: "json",
+                success: function (data) {
+                    console.log(data);
+                    // 서버에서 받은 데이터를 이용하여 동적으로 footer의 내용을 갱신
+                    $("#mbti-IJ").text('I J : ' + data.IJ + '명');
+                    $("#mbti-IP").text('I P : ' + data.IP + '명');
+                    $("#mbti-EP").text('E P : ' + data.EP + '명');
+                    $("#mbti-EJ").text('E J : ' + data.EJ + '명');
+                    $("#mbti-no").text('n o : ' + data.no + '명');
+                },
+                error: function () {
+                    console.log("Error while fetching MBTI counts.");
+                }
+            });
+
+            // 현재 로그인 계정 고유번호
+            var memberNoVal = /*[[${member.member_no}]]*/ '';
+            // 현재 로그인 계정 mbti
+            var memberMbtiVal = /*[[${member.mbti_no}]]*/ '';
+            // 현재 페이지의 영화 고유번호
+            var movieNoVal = /*[[${movie.movie_no}]]*/ '';
+
+            <!-- 리뷰 관련 -->
+            function getMyReview() {
+                //console.log("getMyReview");
+                $.ajax({
+                    url: "/review/"+memberNoVal+"/"+movieNoVal,
+                    type: "get",
+                    success: function(result){
+                        //console.log("getMyReview Success");
+                        //console.log(result);
+                        // 리뷰 내용이 존재할경우 리뷰 출력 요청
+                        if(result.review_content != null) {
+                            printMyReview(result);
+                        } else {
+                            return;
+                        }
+                    },
+                    error: function(e){
+                        console.log("getMyReview Error");
+                        console.log(e);
+                    }
+                }); // ajax end
+            }; // getMyReview end
+
+            getReviewList();
+            var reviews = $("#review_container");
+
+            // 리뷰 목록 요청
+            function getReviewList() {
+                //console.log("getReviewList");
+                $.ajax({
+                    url: "/review/list/"+movieNoVal,
+                    type: "get",
+                    success: function(result){
+                        //console.log("getReviewList Success");
+                        //console.log(result);
+                        printReviewList(result);
+                    },
+                    error: function(e){
+                        console.log("getReviewList Error");
+                        console.log(e);
+                    }
+                }); // ajax end
+            } // getReviewList end
+
+            // 리뷰 목록 화면에 출력
+            function printReviewList(reviewList) {
+                //console.log("printReviewtList");
+                var str = '';
+                for(var i = 0; i < reviewList.length; i++) {
+                    str += '<div>';
+                    str += '<div style="border: 1px solid;"><p class="time"><a href="/member/otherMypage?email='+reviewList[i].member_email+'">'+reviewList[i].member_nickname+'</a>';
+                    str += '<a style="float: right;">'+timeFormat(reviewList[i].review_reg)+'</a></p>';
+                    str += '<div><a>좋아요 : '+reviewList[i].review_like+'</a></div>';
+                    str += '<div><div class="star">'+reviewList[i].review_star+'</div>';
+                    str += '<p><a href="/review/'+reviewList[i].review_no+'?listCheck=3">'+reviewList[i].review_content+'</a></p></div>';
+                    str += '<br /></div><hr>';
+                }
+                reviews.html(str);
+            } // printReviewList end
+        });
+    </script>
+
+
+
+<script src="/includes/js/jquery.js"></script>
+<script src="/includes/js/plugins.js"></script>
+<script src="/includes/js/plugins2.js"></script>
+<script src="/includes/js/custom.js"></script>
+
+</body>
+
+</html>

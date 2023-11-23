@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:include="layout :: defaultLayout">
+<head>
+    <!-- Basic need -->
+    <meta name="description" content="">
+    <meta name="keywords" content="">
+    <meta name="author" content="">
+    <link rel="profile" href="#">
+
+    <!--Google Font-->
+    <link rel="stylesheet" th:href="@{http://fonts.googleapis.com/css?family=Dosis:400,700,500|Nunito:300,400,600}" />
+
+    <!-- Mobile specific meta -->
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="format-detection" content="telephone-no">
+
+    <!-- CSS files -->
+    <link rel="stylesheet" th:href="@{../resources/MovieBoot/css/plugins.css}" />
+    <link rel="stylesheet" th:href="@{../resources/MovieBoot/css/style.css}" />
+
+    <!-- JQuery 라이브러리 추가 -->
+    <script th:src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.0/jquery.min.js"></script>
+
+    <meta charset="UTF-8">
+    <title>review modify</title>
+
+    <style>
+        textarea {
+            margin: 4px;
+            resize: none;
+        }
+        a {
+            text-decoration: none;
+        }
+        .modify_container {
+            border: 1px solid gray;
+        }
+        button {
+            display: inline-block;
+            float: right;
+            margin: 1px;
+        }
+    </style>
+</head>
+<body>
+<br /><br /><br /><br /><br /><br /><br /><br /><br />
+<div class="hero mv-single-hero">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-12"></div>
+        </div>
+    </div>
+</div>
+<h3>리뷰 수정</h3>
+<form th:action="@{/review/modify}" method="post">
+    <br />
+    <div>
+        <button type="button" th:onclick="|window.location='/review/${review.review_no}?pageNum=${pager.pageNum}&listSize=${pager.listSize}&email=${pager.email}&listCheck=${pager.listCheck}&movie_no=${review.movie_no}'|">취소</button>
+        <button type="submit" id="submitBtn">수정완료</button>
+    </div>
+    <div class="modify_container">
+        <br />
+        <div>
+            영화제목 : <a th:href="@{'/movie/' + ${review.movie_no}}">${review.movie_no}</a>
+        </div>
+        <div>
+            별점 : <input type="text" name="review_star" id="starInput" th:value="${review.review_star}" />
+        </div>
+        <br />
+        <div>
+            <textarea rows="5" cols="70" name="review_content" th:text="${review.review_content}"></textarea>
+        </div>
+        <div>
+            <input type="hidden" name="review_no" th:value="${review.review_no}" />
+            <!-- 리스트 보던 페이지로 돌아가기위한 값 -->
+            <input type="hidden" name="pageNum" th:value="${pager.pageNum}" />
+            <input type="hidden" name="listSize" th:value="${pager.listSize}" />
+            <input type="hidden" name="email" th:value="${pager.email}" />
+            <input type="hidden" name="movie_no" th:value="${review.movie_no}" />
+            <input type="hidden" name="listCheck" th:value="${pager.listCheck}" />
+        </div>
+    </div>
+    <br />
+    <br />
+</form>
+
+<script type="text/javascript">
+    $(document).ready(function(){
+        // 로그인 유저 고유번호
+        var memberNoVal = "${sessionScope.member_no}";
+        // 작성자 고유번호
+        var writerVal = "${review.member_no}";
+
+        // 유효성 검사
+        // 권한 체크 (로그인 계정 == 작성자 계정)
+        if (memberNoVal != writerVal) {
+            memberNoVal = "${member.member_no}";
+            if (memberNoVal != writerVal) {
+                console.log("작성자 != 로그인아이디");
+                console.log("수정 폼 접근 불가");
+                history.go(-1);
+            }
+        } // if end
+    });
+</script>
+</body>
+</html>

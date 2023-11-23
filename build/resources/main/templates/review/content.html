@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>review content</title>
+    <script src="https://code.jquery.com/jquery-3.4.1.js"></script>
+    <style>
+        textarea {
+            resize: none;
+        }
+        a {
+            text-decoration: none;
+        }
+        #review_container {
+            border: 1px solid gray;
+        }
+        #tabImg {
+            height: 20px;
+        }
+    </style>
+</head>
+<body>
+<div class="hero common-hero">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-12">
+                <div class="hero-ct">
+                    <h1>리뷰 상세</h1>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
+<div class="page-single movie-single movie_single">
+    <div class="container">
+        <div class="row ipad-width2">
+            <h1 class="bd-hd" th:text="${movieTitle}">
+                <a th:href="@{/movie/content(movie_no=${review.movie_no})}"></a>
+            </h1>
+            <div id="outer_container">
+                <h6 style="color:white;">작성일 : <span th:text="${#dates.format(review.review_reg, 'yyyy-MM-dd HH:mm')}"></span></h6>
+                <button type="button"
+                        th:onclick="@{/review/list(pageNum=${pager.pageNum}, listSize=${pager.listSize}, email=${pager.email}, listCheck=${pager.listCheck}, movie_no=${pager.movie_no})}"
+                        id="toListBtn">목록</button>
+            </div>
+            <div id="review_container">
+                <div>
+                    <form th:action="@{/review/delete}" method="post">
+                        <div id="innner_container">
+                            <h6 style="color:white;">영화제목 : <a th:href="@{/movie/content(movie_no=${review.movie_no})}"
+                                                               style="color:white;" th:text="${movieTitle}"></a></h6>
+                            <h6 style="color:white;"><a style="float: right; color:white;">조회수 : <span
+                                    th:text="${review.review_readcount}"></span> &nbsp;</a></h6>
+                            <!-- if 작성자와 현재 로그인유저가 일치할때  || 관리자로 로그인했을때 -->
+                            <div th:if="${member.member_no == review.member_no || member.member_no == 1}">
+                                <button type="button" id="modifyBtn" data-review_no="${review.review_no}"
+                                        class="reviewContainerBtn"
+                                        th:onclick="@{/review/modify(rno=${review.review_no}, pageNum=${pager.pageNum}, listSize=${pager.listSize}, email=${pager.email}, listCheck=${pager.listCheck})}">
+                                    수정
+                                </button>
+                                <button type="submit" class="reviewContainerBtn">삭제</button>
+                            </div>
+                            <input type="hidden" name="review_no" th:value="${review.review_no}"/>
+                            <input type="hidden" name="mno" th:value="${member.member_no}"/>
+                            <input type="hidden" name="member_no" th:value="${review.member_no}"/>
+                            <!-- 리스트 보던 페이지로 돌아가기위한 값 -->
+                            <input type="hidden" name="pageNum" th:value="${pager.pageNum}"/>
+                            <input type="hidden" name="listSize" th:value="${pager.listSize}"/>
+                            <input type="hidden" name="email" th:value="${pager.email}"/>
+                            <input type="hidden" name="listCheck" th:value="${pager.listCheck}"/>
+                        </div>
+                        <div>
+                            <h6 style="color:white;">작성자 : <a id="writer"
+                                                              th:href="@{/member/otherMypage(email=${writerInfo.member_email})}"
+                                                              style="color:white;"
+                                                              th:text="${writerInfo.member_nickname}"></a></h6>
+                            <h6 style="color:white;">작성자 mbti : <a style="color:white;"
+                                                                   th:text="${writerInfo.member_mbti}"></a></h6>
+                        </div>
+                        <div>
+                            <h6 style="color:white;" th:text="${review.review_star}"></h6>
+                        </div>
+                        <br/>
+                        <div>
+                            <h6 style="color:white;" th:text="${review.review_content}"></h6>
+                        </div>
+                    </form>
+                    <br/>
+                    <div>
+                        <!-- 좋아요 버튼 영역 -->
+                        <div class="likeBtns">
+                        </div>
+                        <div class="other_button_container">
+                            <!-- 로그인아이디와 작성자아이디가 다를때 || 로그인 안했을때 -->
+                            <div th:if="${member.member_no != review.member_no || member == null}">
+                                <!-- 팔로우 버튼 -->
+                                <button id="followBtn" data-following="${review.member_no}"
+                                        th:text="${followStatus == 0 ? '+ 팔로우' : '- 팔로우'} + ' ' + ${followingCount}}"></button>
+                                <button type="button" id="reportBtn">신고</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <hr>
+            <div>
+                <div>
+                    <!-- 로그인 상태일때 댓글 작성폼 표시 -->
+                    <div th:if="${member != null}" class="replyNew">
+                        <form id="replyNewForm">
+                            <div>
+                                <div>
+                                    <div>
+                                        <h6 style="color:white;">
+                                            <label for="replyContentInput">댓글</label>
+                                            <input type="text" name="replyContent" id="replyContentInput"/>
+                                        </h6>
+                                    </div>
+                                    <div>
+                                        <h6 style="color:white;">
+                                            <label for="replyerInput" class="form-label">작성자</label>
+                                            <input type="text" name="replyer" id="replyerInput" th:value="${loginNickname}" disabled/>
+                                        </h6>
+                                    </div>
+                                </div>
+                                <div>
+                                    <div>
+                                        <button type="button" id="newReplyBtn">댓글 등록</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                <div>
+                    <br>
+                    <br>
+                    <br>
+                    <h5 style="color:white;"> 댓글 목록</h5>
+                    <br/>
+                    <div class="comments">
+                    </div>
+                    <div class="reply_pagination">
+                        <ul class="pagination justify-content-end">
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script th:inline="javascript">
+  /*<![CDATA[*/
+  $(document).ready(function() {
+    // 리뷰 고유번호
+    let reviewNoVal = /*[[${review.review_no}]]*/;
+    // 로그인 계정 고유번호
+    let memberNoVal = /*[[${member.member_no}]]*/;
+    // 로그인 계정 닉네임
+    let loginNickname = /*[[${loginNickname}]]*/;
+    // 리뷰 작성자 고유번호
+    let writerNoVal = /*[[${review.member_no}]]*/;
+    // 리뷰 작성자 닉네임
+    let reviewWriter = /*[[${wrtierInfo.member_nickname}]]*/;
+    // 댓글목록 영역 태그
+    let comments = $("div.comments");
+    // 현재페이지 1로 초기화
+    let pageNum = 1;
+    // 댓글페이지번호 영역 태그
+    let reply_pagination = $("ul.pagination");
+    getReplyList(pageNum);
+
+    // 로그인 상태 확인
+    let loginStatus = 1;
+    function loginCheck() {
+      //console.log("loginCheck");
+      if (memberNoVal.length == 0) {
+        alert("로그인 필요.");
+        loginStatus = 0;
+      } // if end
+    } // loginCheck end
+
+    // 좋아요 버튼 상태 출력 요청
+    function getLikeBtnStatus(likeVO) {
+      //console.log("getLikeBtnStatus");
+      let reviewNoVal = likeVO["review_no"];
+      $.ajax({
+        url: "/review/like?rno=" + reviewNoVal,
+        type: "get",
+        success: function(result) {
+          //console.log("getLikeBtnStatus Success");
+          //console.log(result);
+          printLikeBtn(result.likeCount, result.list[0]["like_check"]);
+        },
+        error: function(e) {
+          console.log("getLikeBtnStatus Error");
+          console.log(e);
+        }
+      }); // ajax end
+    } // getLikeBtnStatus end
+
+    // 좋아요 버튼 영역 태그
+    let likeBtns = $("div.likeBtns");
+    // 좋아요 상태 담아줄 변수 만들어 주기
+    let likeCheck = /*[[${likeVO.like_check}]]*/;
+    let likeCount = /*[[${review.review_like}]]*/;
+    printLikeBtn(likeCount, likeCheck);
+
+    // 버튼 출력 함수
+    function printLikeBtn(likeCount, likeCheck) {
+      //console.log("print like btn");
+      let str = "";
+      if (likeCheck == 1) {
+        str = '<button type="button" name="likeBtn" value="1">♥ ' + likeCount + "</button>";
+      } else {
+        str = '<button type="button" name="likeBtn">♡ ' + likeCount + "</button>";
+      }
+      // 로그인 아이디 == 작성자 아이디
+      if (memberNoVal == writerNoVal || memberNoVal == null) {
+        str = '<button type="button" name="myReview" disabled>♡ ' + likeCount + "</button>";
+      }
+      likeBtns.html(str);
+    } // printLikeBtn end
+
+    // 좋아요 버튼 클릭 이벤트
+    $(".likeBtns").on("click", "button", function() {
+      //console.log("likeBtns clicked");
+      loginCheck();
+      // 누른 버튼의 좋아요 상태 가져오기 : 0 || 1
+      let likeCheck = $(this).val();
+      // 필수 변수 제대로 담겼는지 확인
+      if (memberNoVal > 0 && reviewNoVal > 0) {
+        // 저장 요청할 데이터 객체로 준비
+        let likeData = {
+          review_no: reviewNoVal,
+          member_no: memberNoVal,
+          like_check: likeCheck
+        };
+        likeRequest(likeData);
+      } // if end
+    }); // #likeBtn event end
+
+    // 좋아요 처리 요청
+    function likeRequest(likeData) {
+      //console.log("like request");
+      $.ajax({
+        url: "/review/like",
+        type: "post",
+        data: JSON.stringify(likeData),
+        contentType: "application/json;charset=utf-8",
+        success: function(result) {
+          //console.log("likeRequest Success");
+          //console.log(result);
+          getLikeBtnStatus(result);
+        },
+        error: function(e) {
+          console.log("likeRequest Error");
+          console.log(e);
+        }
+      }); // ajax end
+    } // likeRequest end
+
+    // 팔로우/팔로우 취소 버튼 클릭했을때 실행하는 코드
+    $("#followBtn").click(function(e) {
+      // 로그인 상태 확인
+      loginCheck();
+      if (loginStatus == 0) {
+        return;
+      }
+      let btn = $(this);
+      $.ajax({
+        url: "/follow/add",
+        type: "post",
+        data: JSON.stringify({
+          member_no_follower: memberNoVal,
+          member_no_following: writerNoVal
+        }),
+        contentType: "application/json; charset=utf-8",
+        success: function(result) {
+          console.log("success");
+          console.log(result);
+          // FollowResultVO (follow, followerCount, followingCount)
+          // 결과 가지고 버튼과 팔로우 한사람의 팔로우/팔로잉수 변경
+          if (result.following) {
+            btn.html("- 팔로우 " + result.followingCount);
+          } else {
+            btn.html("+ 팔로우 " + result.followingCount);
+          }
+        },
+        error: function(e) {
+          console.log("error.....");
+          console.log(e);
+        }
+      }); // ajax end
+    }); // #followBtn event end
+
+    // 신고 버튼 클릭 이벤트
+    $("#reportBtn").click(function() {
+      console.log("reportBtn clicked");
+      // 로그인 상태 확인
+      loginCheck();
+      if (loginStatus == 0) {
+        return;
+      }
+    }); // #reportBtn event end
+
+    /* 댓글 관련 */
+    // 댓글 저장 버튼 이벤트 처리
+    $("#newReplyBtn").click(function(e) {
+      //console.log("newReplyBtn clicked");
+      // 작성자가 작성한 내용 가져오기
+      let replyContentVal = $("#replyContentInput").val();
+      //console.log("replyerInput : " + memberNoVal);
+      //console.log("replyContentInput : " + replyContentVal);
+      // 예외 처리
+      // 로그인 상태 확인
+      loginCheck();
+      if (loginStatus == 0) {
+        return;
+      }
+      // 댓글 내용 기입 확인
+      if (!replyContentVal) {
+        alert("댓글 내용이 기입되어야 합니다.");
+        return;
+      }
+      // 저장 요청할 데이터 객체로 준비
+      let newReplyData = {
+        reply_content: replyContentVal,
+        member_no: memberNoVal,
+        review_no: reviewNoVal
+      };
+      insertReply(newReplyData);
+    }); // newReplyBtn click event end
+
+    // 댓글 저장 요청
+    function insertReply(replyData) {
+      //console.log("replyData : " + replyData);
+      $.ajax({
+        url: "/replies/new",
+        type: "post",
+        data: JSON.stringify(replyData),
+        contentType: "application/json;charset=utf-8",
+        success: function(result) {
+          //console.log("insertReply Success");
+          //console.log(result);
+          $("#replyContentInput").val("");
+          getReplyList(pageNum); // 보던페이지 다시 요청
+        },
+        error: function(e) {
+          console.log("insertReply Error");
+          console.log(e);
+        }
+      }); // ajax end
+    } // insertReply end
+
+    // 댓글 목록 요청
+    function getReplyList(page) {
+      //console.log("list page : " + page);
+      $.ajax({
+        url: "/replies/list/" + reviewNoVal + "/" + page,
+        type: "get",
+        success: function(result) {
+          //console.log("getReplyList Success");
+          //console.log(result);
+          printList(result.list);
+          printReplyPagination(result.replyCount);
+        },
+        error: function(e) {
+          console.log("getReplyList Error");
+          console.log(e);
+        }
+      }); // ajax end
+    } // getReplyList end
+
+    // 댓글목록 화면에 출력
+    function printList(list) {
+      //console.log("print list");
+      /* replies.list : 댓글 테이블 가져온 List타입 객체
+						-> replies.list[index].컬럼명 으로 값 꺼내기 */
+      let str = "";
+      for (let i = 0; i < list.length; i++) {
+        let tabSize = list[i].reply_level * 20;
+        str += '<div class="comment-li"><p>';
+        if (list[i].reply_level > 0) {
+          str += '<img src="/resources/imgs/background.PNG" width="' + tabSize + '" id="tabImg"/>';
+        }
+        str += '<span><a href="/member/otherMypage?email=' + list[i].member_email + '">' + list[i].member_nickname + '</a></span>';
+        str += '<span style="float: right;" >' + timeFormat(list[i].reply_reg) + '</span></p><div>';
+        if (list[i].reply_level > 0) {
+          str += '<img src="/resources/imgs/background.PNG" width="' + tabSize + '"id="tabImg"/>';
+        }
+        str += '<span>' + list[i].reply_content + '</span>';
+        str += '<span style="float: right;">';
+        str += '<button type="button" data-reply_no="' + list[i].reply_no + '" data-reply_group="' + list[i].reply_group + '" data-reply_step="' + list[i].reply_step + '" data-reply_level="' + list[i].reply_level + '" class="addReplyBtn">답글</button> ';
+        if (list[i].member_no == memberNoVal) {
+          str += '<button type="button" data-reply_no="' + list[i].reply_no + '" data-reply_content="' + list[i].reply_content + '" class="modifyReplyBtn">수정</button>';
+          str += '<button type="button" data-reply_no="' + list[i].reply_no + '" class="delReplyBtn">삭제</button>';
+        } else {
+          str += '<button type="button" data-reply_no="' + list[i].reply_no + '" id="reportBtn">신고</button>';
+        }
+        str += '</div></span><hr /></div>';
+      }
+      comments.html(str);
+    } // printList end
+
+    // 댓글 수정 폼 출력
+    comments.on("click", "button.modifyReplyBtn", function(e) {
+      let replyNoVal = $(this).data("reply_no");
+      let replyContentVal = $(this).data("reply_content");
+
+      let str = '<div><div>';
+      str += '<label for="modifyReplyInput">수정 내용</label>';
+      str += '<input type="text" name="replyContent" id="modifyReplyInput" value="' + replyContentVal + '" />';
+      str += '</div><div>';
+      str += '<button type="button" id="modifyApplyBtn" data-reply_no="' + replyNoVal + '" data-reply_content="' + replyContentVal + '" data-reply_modified="1">수정 완료</button>';
+      str += '<button type="button" id="cancelModifyBtn">취소</button>';
+      str += '</div></div><hr />';
+
+      let parentDiv = $(this).parent().parent(); // comment-li
+      parentDiv.html(str); // 수정폼 추가
+    }); // modifyReplyBtn click event end
+
+    // 댓글 수정 취소 버튼 이벤트 button#cancelModifyBtn
+    comments.on("click", "button#cancelModifyBtn", function(e) {
+      //console.log("cancelModifyBtn clicked");
+      getReplyList(pageNum); // 보던 댓글 페이지 다시 요청
+    }); // cancelModifyBtn click event end
+
+    // 댓글 수정 요청
+    comments.on("click", "button#modifyApplyBtn", function(e) {
+      //console.log("modifyApplyBtn clicked");
+      let replyNoVal = $(this).data("reply_no");
+      //console.log("수정댓글번호 : " + replyNoVal);
+      let replyContentVal = $("#modifyReplyInput").val();
+      //console.log("수정댓글내용 : " + replyContentVal);
+      // 저장할 내용 객체로 생성
+      let modifyReplyData = {
+        reply_no: replyNoVal,
+        reply_content: replyContentVal
+      };
+      $.ajax({
+        url: "/replies/" + replyNoVal,
+        type: "put",
+        data: JSON.stringify(modifyReplyData),
+        contentType: "application/json;charset=utf-8",
+        success: function(result) {
+          //console.log("PUT Reply Success");
+          //console.log(result);
+          getReplyList(pageNum); // 보던 댓글 페이지 다시 요청
+        },
+        error: function(e) {
+          console.log("PUT Reply Error");
+          console.log(e);
+        }
+      }); // ajax end
+    }); // modifyApplyBtn click event end
+
+    // 댓글 삭제 요청
+    comments.on("click", "button.delReplyBtn", function(e) {
+      //console.log("delReplyBtn clicked");
+      let replyNoVal = $(this).data("reply_no");
+      //console.log("삭제 replyNoVal : " + replyNoVal);
+      $.ajax({
+        url: "/replies/" + replyNoVal,
+        type: "delete",
+        success: function(result) {
+          //console.log("DELETE Reply Success");
+          //console.log(result);
+          getReplyList(pageNum); // 보던 댓글 페이지 다시 요청
+        },
+        error: function(e) {
+          console.log("DELETE Reply Error");
+          console.log(e);
+        }
+      }); // ajax end
+    }); // delReplyBtn click event end
+
+    // 댓글의 답글 버튼 클릭 이벤트
+    comments.on("click", "button.addReplyBtn", function(e) {
+      //console.log("addReplyBtn clicked");
+      let replyNoVal = $(this).data("reply_no");
+      let replyContentVal = $(this).data("reply_content");
+      let replyGroupVal = $(this).data("reply_group");
+      let replyStepVal = $(this).data("reply_step");
+      let replyLevelVal = $(this).data("reply_level");
+
+      // 로그인 확인
+      loginCheck();
+      if (loginStatus == 0) {
+        console.log(loginStatus);
+        return;
+      }
+
+      let str = '<div><div><div>';
+      str += '<label for="addReplyInput">답글</label>';
+      str += '<input type="text" name="rerlyContent" id="addReplyInput" />';
+      str += '</div><div><label for="addReplyerInput" >작성자</label>';
+      str += '<input type="text" name="replyer" id="addReplyerInput" data-member_no="' + memberNoVal + '" value="' + loginNickname + '" readonly />';
+      str += '</div></div><div><div></div><div>';
+      str += '<button type="button" id="saveReplyBtn" data-reply_no="' + replyNoVal + '" data-reply_group="' + replyGroupVal + '" data-reply_step="' + replyStepVal + '" data-reply_level="' + replyLevelVal + '">답글 등록</button>';
+      str += '<button type="button" id="cancelReplyBtn">취소</button>';
+      str += '</div></div></div><hr />';
+
+      let parentDiv = $(this).parent().parent().parent(); // .comment-li
+      parentDiv.after(str); // 답글폼 추가
+    }); // addReplyBtn click event end
+
+    // 답글 저장 버튼 이벤트 comments의 동적 button#saveReplyBtn
+    comments.on("click", "button#saveReplyBtn", function(e) {
+      //console.log("saveReplyBtn clicked");
+      // 저장할 답글, 답글작성자, 답글 저장할 댓글의 고유번호, 답글 저장할 댓글의 내용
+      let replyContentVal = $("#addReplyInput").val();
+      let replyerVal = $("#addReplyerInput").data("member_no");
+      let replyNoVal = $(this).data("reply_no");
+      let replyGroupVal = $(this).data("reply_group");
+      let replyStepVal = $(this).data("reply_step");
+      let replyLevelVal = $(this).data("reply_level");
+
+      let addReplyData = {
+        reply_content: replyContentVal,
+        member_no: replyerVal,
+        review_no: reviewNoVal,
+        reply_no: replyNoVal,
+        reply_group: replyGroupVal,
+        reply_step: replyStepVal,
+        reply_level: replyLevelVal
+      };
+      insertReply(addReplyData);
+    }); // saveReplyBtn click event end
+
+    // 답글 취소 버튼 이벤트 comments의 동적 button#cancelReplyBtn
+    comments.on("click", "button#cancelReplyBtn", function(e) {
+      //console.log("cancelReplyBtn clicked");
+      getReplyList(pageNum); // 보던 댓글 페이지 다시 요청
+    }); // cancleReplyBtn click event end
+
+    // 댓글페이지 번호 화면에 출력
+    function printReplyPagination(replyCount) {
+      //console.log("댓글페이지번호, replyCount : " + replyCount);
+      // 전체 댓글수로 페이지번호 띄워줄 값들 계산
+      let endNum = Math.ceil(pageNum / 10.0) * 10;
+      let startNum = endNum - 9;
+      let prev = startNum != 1;
+      let next = false;
+      if (endNum * 10 >= replyCount) {
+        endNum = Math.ceil(replyCount / 10.0);
+      }
+      if (endNum * 10 < replyCount) {
+        next = true;
+      }
+      // 페이지 번호 띄워줄 HTML
+      let str = "";
+      if (prev) {
+        str += '<a class="page-link" href="' + (startNum - 1) + '"> Prev </a>';
+      }
+      for (let i = startNum; i <= endNum; i++) {
+        str += '<a class="page-link" href="' + i + '">&nbsp; ' + i + ' &nbsp;</a>';
+      }
+      if (next) {
+        str += '<a class="page-link" href="' + (endNum + 1) + '"> Next </a>';
+      }
+      reply_pagination.html(str);
+    } // printReplyPagination end
+
+    // 댓글 페이지번호 이벤트 처리
+    reply_pagination.on("click", "a.page-link", function(e) {
+      e.preventDefault(); // a태그 기본기능 취소 (기본기능:href속성의 주소로 이동)
+      let page_link_num = $(this).attr("href");
+      //console.log("댓글 페이지 번호 클릭! page_link_num : " + page_link_num);
+      pageNum = page_link_num; // 현재 페이지번호를 이동하는 페이지번호로 변경
+      getReplyList(page_link_num); // 댓글 목록 다시 요청
+    });
+
+    // 날짜 변환 함수
+    function timeFormat(timeValue) {
+      let dateObj = new Date(timeValue);
+      let yy = dateObj.getFullYear();
+      let mm = dateObj.getMonth() + 1;
+      let dd = dateObj.getDate();
+      let hh = dateObj.getHours();
+      let mi = dateObj.getMinutes();
+
+      let result = yy + "-" + (mm > 9 ? "" : "0") + mm + "-" + (dd > 9 ? "" : "0") + dd + " ";
+      result += (hh > 9 ? "" : "0") + hh + ":" + (mi > 9 ? "" : "0") + mi;
+      return result;
+    }
+  });
+</script>
+
+
+</body>
+</html>

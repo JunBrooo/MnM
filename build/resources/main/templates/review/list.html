@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:include="layout :: defaultLayout">
+<head>
+    <!-- Basic need -->
+    <title>list</title>
+    <meta charset="UTF-8">
+    <meta name="description" content="">
+    <meta name="keywords" content="">
+    <meta name="author" content="">
+    <link rel="profile" href="#">
+
+    <!--Google Font-->
+    <link rel="stylesheet" th:href="@{http://fonts.googleapis.com/css?family=Dosis:400,700,500|Nunito:300,400,600}" />
+
+    <!-- Mobile specific meta -->
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="format-detection" content="telephone-no">
+
+    <!-- CSS files -->
+    <link rel="stylesheet" th:href="@{../resources/MovieBoot/css/plugins.css}" />
+    <link rel="stylesheet" th:href="@{../resources/MovieBoot/css/style.css}" />
+
+    <!-- JQuery 라이브러리 추가 -->
+    <script th:src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.0/jquery.min.js"></script>
+
+    <style>
+        #review_container {
+            height: 150px;
+            width: 250px;
+        }
+        #likeBtn {
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+<div class="hero common-hero">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-12">
+                <div class="hero-ct">
+                    <h1>리뷰 리스트</h1>
+                    <ul class="breadcumb">
+                        <li class="active"><a href="/home">홈</a></li>
+                        <li> <span class="ion-ios-arrow-right"></span> 리뷰 리스트 </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="page-single">
+    <div class="container">
+
+        <!-- 리스트 나열 -->
+        <div id="review_list_container">
+            <th:block th:switch="${pageDTO.pager.listCheck}">
+                <th:block th:case="2">
+                    <div style="margin-left: 10px;">
+                        <a style="font-size: 150%;" th:href="@{/movie/content(movie_no=${movie.movie_no})}" th:text="${movie.movie_title}">Movie Title</a>의 리뷰 입니다.
+                        <button type="button" style="float: right;" th:onclick="|window.location='/review/list'|">전체 리뷰</button>
+                    </div>
+                    <hr/>
+                </th:block>
+                <th:block th:case="1">
+                    <div>
+                        <a style="font-size: 150%; margin-left: 10px;" th:href="@{/member/otherMypage(email=${pageMember.member_email})}" th:text="${pageMember.member_nickname}">Member Nickname</a>님이 좋아요한 리뷰 입니다.
+                        <button type="button" style="float: right;" th:onclick="|window.location='/review/list'|">전체 리뷰</button>
+                    </div>
+                    <hr/>
+                </th:block>
+                <th:block th:case="${pageMember != null}">
+                    <div>
+                        <a style="font-size: 150%; margin-left: 10px;" th:href="@{/member/otherMypage(email=${pageMember.member_email})}" th:text="${pageMember.member_nickname}">Member Nickname</a>님이 작성한 리뷰 입니다.
+                        <button type="button" style="float: right;" th:onclick="|window.location='/review/list'|">전체 리뷰</button>
+                    </div>
+                    <hr/>
+                </th:block>
+                <th:block th:case="*">
+                    <div><a style="margin-left: 10px;">전체 리뷰 입니다.</a></div>
+                    <hr/>
+                </th:block>
+            </th:block>
+
+            <!-- 리뷰 리스트 시작 -->
+            <div class="row ipad-width2">
+                <div class="col-md-9 col-sm-12 col-xs-12">
+                    <div class="celebrity-items">
+                        <th:block th:each="review : ${list}">
+                            <div id="review_container" class="mv-item-infor">
+                                <h3>
+                                    <a class="time sm-text" th:href="@{/movie/content(movie_no=${review.movie_no})}" th:text="${review.movie_title}">Movie Title</a>
+                                </h3>
+                                <div id="writer_container">
+                                    <a th:href="@{/member/otherMypage(email=${review.member_email})}" th:text="${review.member_nickname}">Member Nickname</a>
+                                    <a style="float: right;" th:text="${review.member_mbti}">Member MBTI</a>
+                                </div>
+                                <p class="rate">
+                                    <i class="ion-android-star"></i>
+                                    <span th:text="${review.review_star}"></span> /5
+                                </p>
+                                <p>
+                                    <a th:href="@{/review/${review.review_no}(pageNum=${pageDTO.pager.pageNum},listSize=${pageDTO.pager.listSize},email=${pageDTO.pager.email},listCheck=${pageDTO.pager.listCheck},movie_no=${review.movie_no})}" id="reviewSummary" th:text="${review.review_content}">Review Content</a>
+                                </p>
+                                <div class="button_container">
+                                    <!-- 좋아요 버튼 영역 -->
+                                    <div style="display: inline-block;" id="like_button_container">
+                                        <!-- 좋아요 누른 리뷰 확인 -->
+                                        <!-- 좋아요 버튼 출력 영역 -->
+                                        <th:block th:switch="${member.member_no == review.member_no || member == null}">
+                                            <th:block th:case="true">
+                                                <div>
+                                                    <i class="ion-ios-heart-outline" style="cursor: default;"> <span th:text="${review.review_like}">Review Like</span></i>
+                                                </div>
+                                            </th:block>
+                                            <th:block th:case="*">
+                                                <th:block th:switch="${lmap.get(review.review_no)}">
+                                                    <th:block th:case="1">
+                                                        <div>
+                                                            <a id="likeBtn" class="ion-ios-heart" data-review_no="${review.review_no}" data-like_check="1" th:text="${review.review_like}">Review Like</a>
+                                                        </div>
+                                                    </th:block>
+                                                    <th:block th:case="*">
+                                                        <div>
+                                                            <a id="likeBtn" class="ion-ios-heart-outline" data-review_no="${review.review_no}" data-like_check="0" th:text="${review.review_like}">Review Like</a>
+                                                        </div>
+                                                    </th:block>
+                                                    </th:switch>
+                                                </th:block>
+                                            </th:block>
+                                    </div>
+                                    <div style="float: right;">
+                                        <!-- 댓글 개수 영역 -->
+                                        <a id="replyCount" style="cursor: default;" th:text="${map.get(review.review_no)}">Reply Count</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </th:block>
+                    </div>
+                </div>
+            </div>
+            <!-- 페이지네이션 : 페이지 번호  -->
+            <div class="pagination2">
+                <th:block th:if="${pageDTO.prev}">
+                    <a th:href="@{/review/list(pageNum=${pageDTO.startPage - 1},listSize=${pageDTO.pager.listSize},email=${pageDTO.pager.email},listCheck=${pageDTO.pager.listCheck})}">Prev</a>
+                </th:block>
+                <th:block th:each="num : ${#numbers.sequence(pageDTO.startPage, pageDTO.endPage)}">
+                    <th:block th:if="${num == pageDTO.pager.pageNum}">
+                        <a><span th:text="${num}">Page Num</span></a>
+                    </th:block>
+                    <th:block th:if="${num != pageDTO.pager.pageNum}">
+                        <a th:href="@{/review/list(pageNum=${num},listSize=${pageDTO.pager.listSize},email=${pageDTO.pager.email},listCheck=${pageDTO.pager.listCheck})}"><span th:text="${num}">Page Num</span></a>
+                    </th:block>
+                </th:block>
+                <th:block th:if="${pageDTO.next}">
+                    <a class="page-link" th:href="@{/review/list(pageNum=${pageDTO.endPage + 1},listSize=${pageDTO.pager.listSize},email=${pageDTO.pager.email},listCheck=${pageDTO.pager.listCheck})}">Next</a>
+                </th:block>
+            </div>
+        </div>
+        <!-- 리뷰 리스트 끝 -->
+    </div>
+</div>
+
+<script type="text/javascript">
+    $(document).ready(function() {
+        // 필요한 변수 미리 선언
+        // 전체 리뷰 개수 가져오기
+        let listTotalSize = "${pageDTO.total}";
+        // 현재 페이지의 리뷰 개수
+        let listSize = "${pageDTO.pager.listSize}";
+        // 현재 로그인중인 계정
+        let memberNoVal = "${member.member_no}";
+        // 좋아요 버튼 영역 태그
+        let likeBtns = $("#likeBtn.parent-btn");
+        // 작성자 페이지의 이메일
+        let pageEmailVal = "${pageDTO.pager.email}";
+
+        console.log(memberNoVal);
+
+        if (listTotalSize == 0) {
+            alert("게시물이 없습니다.");
+            history.go(-1);
+        }
+
+        // 좋아요 버튼 클릭 이벤트
+        $("#like_button_container div").on("click", "a", function() {
+            console.log("likeBtns clicked");
+            let likeCheck = $(this).data("like_check"); // 버튼의 좋아요 상태 : 0 || 1
+            let reviewNoVal = $(this).data("review_no"); // 버튼의 리뷰고유번호
+            likeBtns = $(this).parent();
+            // 필수 변수 제대로 담겼는지 확인
+            if (memberNoVal > 0 && reviewNoVal > 0) {
+                // 저장 요청할 데이터 객체로 준비
+                let likeData = {
+                    review_no: reviewNoVal,
+                    member_no: memberNoVal,
+                    like_check: likeCheck
+                };
+                likeRequest(likeData);
+            } else { // 비로그인 상태
+                console.log("not logged in");
+                alert("로그인 해주세요.");
+            }
+        }); // #likeBtn event end
+
+        // 좋아요 처리 요청
+        function likeRequest(likeData) {
+            //console.log("like request");
+            $.ajax({
+                url: "/review/like",
+                type: "post",
+                data: JSON.stringify(likeData),
+                contentType: "application/json;charset=utf-8",
+                success: function(result) {
+                    //console.log("likeRequest Success");
+                    //console.log(result);
+                    getLikeBtnStatus(result);
+                },
+                error: function(e) {
+                    console.log("likeRequest Error");
+                    console.log(e);
+                }
+            }); // ajax end
+        } // likeRequest end
+
+        // 좋아요 버튼 상태 출력 요청
+        function getLikeBtnStatus(likeVO) {
+            //console.log("getLikeBtnStatus");
+            let reviewNoVal = likeVO["review_no"];
+            $.ajax({
+                url: "/review/like?rno=" + reviewNoVal,
+                type: "get",
+                success: function(result) {
+                    //console.log("getLikeBtnStatus Success");
+                    console.log(result);
+                    printLikeBtn(result);
+                },
+                error: function(e) {
+                    console.log("getLikeBtnStatus Error");
+                    console.log(e);
+                }
+            }); // ajax end
+        } // getLikeBtnStatus end
+
+        // 좋아요 버튼 출력
+        function printLikeBtn(likeObj) {
+            //console.log("print like btn");
+            let likeCheck = likeObj.list[0]["like_check"];
+            let reviewNoVal = likeObj.list[0]["review_no"];
+            let likeCount = likeObj.likeCount;
+            let str = '';
+            if (likeCheck == 1) {
+                str = '<a id="likeBtn" class="ion-ios-heart" data-review_no="' + reviewNoVal + '" data-like_check="1" th:text="${review.review_like}">Review Like</a>';
+            } else {
+                str = '<a id="likeBtn" class="ion-ios-heart-outline" data-review_no="' + reviewNoVal + '" data-like_check="0" th:text="${review.review_like}">Review Like</a>';
+            }
+            likeBtns.html(str);
+        } // printLikeBtn end
+
+    });
+</script>
+</body>
+</html>

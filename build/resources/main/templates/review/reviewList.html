@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>review list</title>
+
+    <script src="https://code.jquery.com/jquery-3.4.1.js"></script>
+
+    <style>
+        div {
+            display: block;
+        }
+        ul {
+            display: block;
+            list-style-type: disc;
+        }
+        li {
+            display: inline-block;
+            border: 1px solid black;
+        }
+        textarea {
+            resize: none;
+            width: 215px;
+            height: 85px;
+        }
+        .review_summary_container {
+            border: 1px solid gray;
+            width: 220px;
+            height: 90px
+        }
+        a {
+            text-decoration: none;
+        }
+        #reviewSummary {
+            color: black;
+        }
+
+    </style>
+
+</head>
+<body>
+
+<h1>Review List Page</h1>
+<hr>
+
+<h3>header (include)</h3>
+<hr>
+
+
+<h3>body</h3>
+
+<div>
+    {나열 기준}
+</div>
+<div>
+    <ul>
+        <li th:each="review, status : ${list}" id="lists">
+            <div>
+                <div><a th:href="@{/movie/${review.movie_no}}">영화 제목 ${review.movie_no}</a></div>
+                <div>
+                    <a id="writer" th:href="@{/member/${review.member_no}}">작성자 : ${review.member_no}</a>
+                    <a>작성자 mbti : ${review.review_mbti}</a>
+                </div>
+                <div>별점 : ${review.review_star} </div>
+                <div class="review_summary_container">
+                    <a th:href="@{/review/${review.review_no}}" id="reviewSummary">
+                        <textarea disabled="disabled" th:text="${review.review_content}"></textarea>
+                    </a>
+                </div>
+                <div>
+                    <!-- 좋아요 개수 -->
+                    <!-- 해당 리뷰를 좋아요 안 누른 사람 || 비로그인 상태 -->
+                    <!-- 로그인 시 좋아요 기능 사용 여부에 따라 버튼 표시 -->
+                    <button type="button" id="likeBtn" th:if="${sessionScope.sid == null}" >♡ ${review.review_like}</button>
+                    <button type="button" id="unLikeBtn" th:if="${sessionScope.sid != null}" >♥ ${review.review_like}</button>
+
+                    <!-- 댓글 개수 -->
+                    <!-- map에서 key값으로 리뷰고유번호 주고 value=replyCount 꺼내기 -->
+                    <button type="button" id="replyCount" disabled="disabled" th:text="'댓글 개수 : ' + ${map[review.review_no]}" ></button>
+                </div>
+            </div>
+        </li>
+    </ul>
+</div>
+
+
+<script type="text/javascript">
+        $(document).ready(function(){
+            /*
+            // 좋아요 버튼 클릭 이벤트
+            $("#likeBtn").click(function(){
+                console.log("like button clicked");
+                $.ajax({
+                    url: "/review/like",
+                    type: "post",
+                    success: function(result){
+                        console.log("좋아요 +1");
+                        console.log(result);
+                    },
+                    error: function(e){
+                        console.log("Error");
+                        console.log(e);
+                    }
+                });
+            });
+            */
+
+
+        });
+    </script>
+
+
+
+<hr>
+<h3>footer (include)</h3>
+
+</body>
+</html>

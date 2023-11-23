@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>review modify</title>
+
+    <script src="https://code.jquery.com/jquery-3.4.1.js"></script>
+
+    <style>
+        textarea {
+            margin: 4px;
+            resize: none;
+        }
+        a {
+            text-decoration: none;
+        }
+        .modify_container {
+            border: 1px solid gray;
+        }
+        button {
+            display: inline-block;
+            float: right;
+            margin: 1px;
+        }
+    </style>
+
+</head>
+<body>
+
+<h1>Review Modify Page</h1>
+<hr>
+
+<h3>header (include)</h3>
+<hr>
+
+
+<h3>body</h3>
+
+<h3>리뷰 수정</h3>
+<form action="/review/modify" method="post">
+    <br />
+    <div>
+        <button type="button" onclick="window.location='/review/' + ${review.review_no}">취소</button>
+    </div>
+    <div class="modify_container">
+        <br />
+        <div>
+            영화제목 : <a th:text="${review.movie_no}"></a>
+        </div>
+        <div>
+            별점 : <input type="text" name="review_star" th:value="${review.review_star}" />
+        </div>
+        <br />
+        <div>
+            <textarea rows="5" cols="70" name="review_content" th:text="${review.review_content}"></textarea>
+        </div>
+        <div>
+            <input type="hidden" name="review_no" th:value="${review.review_no}" >
+            <button type="submit" id="submitBtn" >수정완료</button>
+        </div>
+    </div>
+    <br />
+</form>
+
+
+<hr>
+<h3>footer (include)</h3>
+
+</body>
+</html>

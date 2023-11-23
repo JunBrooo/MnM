@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>리뷰 내용</title>
+
+  <script src="https://code.jquery.com/jquery-3.4.1.js"></script>
+
+  <style>
+        textarea {
+            resize: none;
+        }
+        a {
+            text-decoration: none;
+        }
+        #review_container {
+            border: 1px solid gray;
+        }
+        #toListBtn {
+            display: flex;
+            justify-content: flex-end;
+        }
+        .reviewContainerBtn {
+            float: right;
+            margin: 1px;
+        }
+        #outer_container {
+            display: flex;
+            justify-content: space-between;
+        }
+        #inner_container {
+            display: inline-block;
+        }
+    </style>
+</head>
+<body>
+
+<h1>리뷰 내용 페이지</h1>
+<hr>
+
+<h3>헤더 (include)</h3>
+<hr>
+
+<h3>본문</h3>
+
+<h3>리뷰 상세 영역</h3>
+
+<div id="outer_container">
+  작성일: <span th:text="${#dates.format(review.review_reg, 'yyyy-MM-dd HH:mm')}"></span>
+  <button type="button" th:onclick="|window.location='/review/list'|"
+          id="toListBtn">리뷰 목록</button>
+</div>
+<div id="review_container">
+  <div>
+    <form action="/review/delete" method="post">
+      <div id="innner_container">
+        영화 제목: <a th:href="@{'/movie/' + ${review.movie_no}}">${review.movie_no}</a>
+        <!-- 만약 작성자와 현재 로그인 유저가 일치하거나 관리자로 로그인한 경우 -->
+        <button type="button" id="modifyBtn" th:attr="data-rno=${review.review_no}"
+                class="reviewContainerBtn" th:onclick="|window.location='/review/modify?rno=${review.review_no}'|">수정</button>
+        <input type="hidden" name="rno" th:value="${review.review_no}" />
+        <button type="submit" class="reviewContainerBtn" >삭제</button>
+      </div>
+      <div>
+        작성자: <a id="writer" th:href="@{'/member/' + ${review.member_no}}">${review.member_no}</a>
+        작성자 MBTI: <a th:text="${review.review_mbti}"></a>
+      </div>
+      <div>
+        별점: <span th:text="${review.review_star}"></span>
+      </div>
+      <br />
+      <div>
+        <span th:text="${review.review_content}"></span>
+      </div>
+    </form>
+    <br />
+    <div>
+      <button type="button" >좋아요</button>
+      <button type="button" >팔로우</button>
+      <!-- 작성자가 아닌 경우 -->
+      <button type="button" >신고</button>
+    </div>
+  </div>
+</div>
+
+<c:if test=""></c:if>
+
+<h3>댓글 영역</h3>
+<div>
+  <!-- 로그인 상태일 때 댓글 작성 폼 표시 -->
+  <div class="replyInput">
+    <textarea rows="3" cols="60"></textarea>
+    <button type="button" id="newReplyBtn">댓글 작성</button>
+  </div>
+  <br />
+  <h4>댓글 목록</h4>
+  <div>
+
+  </div>
+</div>
+
+<hr>
+<h3>푸터 (include)</h3>
+
+</body>
+</html>

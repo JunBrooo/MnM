@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://thymeleaf.org">
+
+<head>
+    <!-- Basic need -->
+    <title>home</title>
+    <meta charset="UTF-8">
+
+    <!--Google Font-->
+    <link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Dosis:400,700,500|Nunito:300,400,600" />
+
+    <!-- Mobile specific meta -->
+    <meta name=viewport content="width=device-width, initial-scale=1">
+    <meta name="format-detection" content="telephone-no">
+
+    <!-- CSS files -->
+  <link rel="stylesheet" href="/includes/plugins.css">
+  <link rel="stylesheet" href="/includes/style.css">
+
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+
+</head>
+<body>
+<input type="hidden" name="movie_no" value="${movie.movie_no}" />
+<input type="hidden" name="pageNum" value="${pager.pager.pageNum}" />
+<input type="hidden" name="listSize" value="${pager.pager.listSize}" />
+<input type="hidden" name="sel" value="${pager.pager.sel}" />
+<input type="hidden" name="keyword" value="${pager.pager.keyword}" />
+
+
+<div th:replace="header :: header"></div>
+
+<!-- 샘플 데이터, 슬라이드 꾸미기용 -->
+
+<div th:if="${session.member == null}"   >
+  <div class="slider movie-items">
+    <div class="container">
+      <div class="row" style="opacity: 0.5;">
+        <h2 style="font-size:25px; color:white; text-align:left; margin:20px;" th:text="'MBTI 추천 영화'"></h2>
+        <!-- home화면 슬라이드바 -->
+        <div class="slick-multiItemSlider" >
+          <!-- 홈 화면 슬라이드바 포스터 갯수 -->
+          <div th:each="movie: ${list}" th:if="${#lists.size(list) > 4}" th:remove="tag">
+            <div class="movie-item" th:id="${movie.movie_no}">
+              <!-- 영화 이미지, 클릭 시 해당 영화 페이지로 -->
+              <div class="mv-img">
+                <img th:src="${movie.movie_link}" alt=""  style=" width:100%; height:385px;" >
+              </div>
+              <div class="title-in">
+                <!-- 영화 상세페이지 -->
+                <h6>
+                  <a th:text="${movie.movie_title}"></a>
+                </h6>
+                <!-- 리뷰점수 들어갈 공간 -->
+                <p><i class="ion-android-star"></i><span></span></p>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="loginLink">
+          <h2><a style="color:white; " th:text="'MBTI 추천받기를 원하시면 로그인하세요.'"></a> </h2>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<div th:if="${session.member != null}"  >
+  <div class="slider movie-items">
+    <div class="container">
+      <div class="row">
+        <h2 style="font-size:25px; color:white; text-align:left; margin:20px;" th:text="${member.member_mbti} + '추천 영화'"></h2>
+
+        <!-- home화면 슬라이드바 -->
+        <div class="slick-multiItemSlider">
+          <!-- 홈 화면 슬라이드바 포스터 갯수 -->
+          <div th:each="movie: ${list}" th:if="${#lists.size(list) > 4}" th:remove="tag">
+            <div class="movie-item" th:id="${movie.movie_no}">
+              <!-- 영화 이미지, 클릭 시 해당 영화 페이지로 -->
+              <div class="mv-img">
+                <a th:href="@{/movie/content(movie_no=${movie.movie_no})}">
+                  <img id="" th:src="${movie.movie_link}" alt=""  style=" width:100%; height:385px;" >
+                </a>
+              </div>
+              <div class="title-in">
+                <!-- 영화 상세페이지 -->
+                <h6>
+                  <a th:href="@{/movie/content(movie_no=${movie.movie_no})}" th:text="${movie.movie_title}"></a>
+                </h6>
+                <!-- 리뷰점수 들어갈 공간 -->
+                <p><i class="ion-android-star"></i><span></span></p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<div class="movie-items">
+  <div class="container">
+    <div class="row ipad-width">
+      <!--  전체 페이지 div영역 , 터치 XXX -->
+
+
+      <div class="title-hd">
+        <h2 th:text="'전체 영화'"></h2>
+        <!-- # : 최신 영화 리스트 페이지로 이동할 곳 (카테고리 추가 후 최신영화리스트 출력-->
+        <a th:href="@{/movie/list}" th:text="'영화 더보기' " class="viewall"><i class="ion-ios-arrow-right"></i></a>
+      </div>
+      <br>
+      <div class="tab-content">
+        <div class="blog-it-infor">
+          <div class="row">
+            <div class="slick-multiItem">
+              <div th:each="movie: ${list}" th:if="${#lists.size(list) > 8}" th:remove="tag">
+                <div class="slide-it" th:id="${movie.movie_no}">
+                  <div class="movie-item">
+                    <div class="mv-img">
+                      <img th:src="${movie.movie_link}" alt="" style=" width:100% ; height:400px;">
+                    </div>
+                    <div class="hvr-inner">
+                      <a th:href="@{/movie/content(movie_no=${movie.movie_no},listSize=${pager.pager.listSize},sel=${pager.pager.sel},keyword=${pager.pager.keyword})}">
+                        <i class="ion-android-arrow-dropright" th:text="'상세정보'"></i></a>
+                    </div>
+                    <div class="title-in">
+                      <h6><a th:text="${movie.movie_title}"></a></h6>
+                      <p><i class="ion-android-star"></i><span></span></p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+      </div>
+
+
+      <div class="title-hd">
+        <h2 th:text="'최신 영화'"></h2>
+      </div>
+      <br>
+      <div class="tab-content">
+        <div class="blog-it-infor">
+          <div class="row">
+            <div class="slick-multiItem">
+              <div th:each="movie: ${list}" th:if="${#lists.size(list) > 8}" th:remove="tag">
+                <div class="slide-it" id="${movie.movie_no}">
+                  <div class="movie-item">
+                    <div class="mv-img">
+                      <img th:src="${movie.movie_link}" alt="" style=" width:100% ; height:400px;">
+                    </div>
+                    <div class="hvr-inner" >
+                      <a th:href="@{/movie/content(movie_no=${movie.movie_no},listSize=${pager.pager.listSize},sel=${pager.pager.sel},keyword=${pager.pager.keyword})}">
+                        <i class="ion-android-arrow-dropright" th:text="'상세정보'"></i></a>
+                    </div>
+                    <div class="title-in">
+                      <h6><a th:text="${movie.movie_title}"></a></h6>
+                      <p><i class="ion-android-star"></i><span></span></p>
+                      <!-- 영화 평점 들어갈 곳 -->
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+      </div>
+
+
+      <div class="title-hd">
+        <h2 th:text="'인기 리뷰글'"></h2>
+        <!-- # :  인기리뷰글 리스트페이지 나올 더보기 버튼(안해도 무관) -->
+        <a href="/review/list" class="viewall" >더보기<i class="ion-ios-arrow-right"></i></a>
+      </div>
+      <br>
+      <div class="tab-content">
+        <div class="blog-it-infor" id="review_container">
+          <div class="row">
+            <div class="slick-multiItem">
+              <div th:each="review : ${popularReview}" th:if="${#lists.size(popularReview) > 8}" th:remove="tag" >
+                <div class="slide-it">
+                  <div class="blog-item-style-2">
+                    <!-- 리뷰남긴 사람 : 해당 사용자 마이페이지 이동 링크 -->
+                    <h6><a th:href="@{/member/otherMypage(email=${review.member_email})}" th:text="${review.member_nickname}"></a></h6>
+                    <div class="blog-it-infor">
+                      <br>
+                      <!-- 리뷰남긴 영화 제목  : 태그에 해당 리뷰담긴 상세 영화 페이지 주소와 이름값 불러올 주소-->
+                      <h3><a th:href="@{/movie/content(movie_no=${review.movie_no})}" th:text="${review.movie_title}"></a></h3>
+                      <!-- 별점기능 -->
+                      <p><i class="ion-android-star"></i><span th:text="${review.review_star} + '/5'"></span> </p>
+                      <span class="time" th:text="${review.review_reg}"></span>
+                      <p><a th:href="@{/review/${review.review_no}(listCheck=3)}" th:text="${review.review_content}"></a></p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+
+
+      <!-- 영화 페이지 설정 끝나는 부분, 건들기 x -->
+    </div>
+  </div>
+</div>
+
+
+
+</body>
+
+<script>
+
+$(document).ready(function(){
+		// 현재 로그인 계정 고유번호
+		let memberNoVal = "${member.member_no}";
+		// 현재 로그인 계정 mbti
+		let memberMbtiVal = "${member.mbti_no}";
+		// 현재 페이지의 영화 고유번호
+		let movieNoVal = "${movie.movie_no}";
+
+	<!-- 리뷰 관련 -->
+		function getMyReview() {
+			//console.log("getMyReview");
+			$.ajax({
+				url: "/review/"+memberNoVal+"/"+movieNoVal,
+				type: "get",
+				success: function(result){
+					//console.log("getMyReview Success");
+					//console.log(result);
+					// 리뷰 내용이 존재할경우 리뷰 출력 요청
+					if(result.review_content != null) {
+						printMyReview(result);
+					} else {
+						return;
+					}
+				},
+				error: function(e){
+					console.log("getMyReview Error");
+					console.log(e);
+				}
+			}); // ajax end
+		}; // getMyReview end
+
+		getReviewList();
+		let reviews = $("#review_container");
+
+		// 리뷰 목록 요청
+		function getReviewList() {
+			//console.log("getReviewList");
+			$.ajax({
+				url: "/review/list/"+movieNoVal,
+				type: "get",
+				success: function(result){
+					//console.log("getReviewList Success");
+					//console.log(result);
+					printReviewList(result);
+				},
+				error: function(e){
+					console.log("getReviewList Error");
+					console.log(e);
+				}
+			}); // ajax end
+		} // getReviewList end
+
+		// 리뷰 목록 화면에 출력
+		function printReviewList(reviewList) {
+			//console.log("printReviewtList");
+			let str = '';
+			for(let i = 0; i < reviewList.length; i++) {
+				str += '<div>';
+				str += '<div style="border: 1px solid;"><p class="time"><a href="/member/otherMypage?email='+reviewList[i].member_email+'">'+reviewList[i].member_nickname+'</a>';
+				str += '<a style="float: right;">'+timeFormat(reviewList[i].review_reg)+'</a></p>';
+				str += '<div><a>좋아요 : '+reviewList[i].review_like+'</a></div>';
+				str += '<div><div class="star">'+reviewList[i].review_star+'</div>';
+				str += '<p><a href="/review/'+reviewList[i].review_no+'?listCheck=3">'+reviewList[i].review_content+'</a></p></div>';
+				str += '<br /></div><hr>';
+			}
+			reviews.html(str);
+		} // printReviewList end
+});
+</script>
+
+<div th:replace="footer :: footer"></div>
+
+</html>

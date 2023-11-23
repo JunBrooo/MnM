@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>signupPro</title>
+</head>
+<body>
+<script th:inline="javascript">
+		alert("가입이 완료되었습니다!!! M&M 회원이 되신걸 환영합니다");
+		window.location='/*[[@{/home}]]*/'; // HomeController의 GetMapping("home") 으로 이동
+	</script>
+</body>
+</html>
